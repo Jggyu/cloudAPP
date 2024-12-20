@@ -13,12 +13,10 @@ phases:
     commands:
       - echo Installing dependencies...
       - yum update -y
-      - yum install -y python3-pip python3-devel docker
-      # MySQL 관련 의존성 추가
-      - yum remove -y mysql mysql-devel
-      - yum install -y https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
-      - yum install -y mysql-community-devel mysql-community-client
-      - yum install -y gcc pkgconfig
+      # Amazon Linux MySQL 설치
+      - amazon-linux-extras enable mysql8.0
+      - yum clean metadata
+      - yum install -y mysql-devel gcc python3-devel python3-pip
       - pip3 install --upgrade pip
 
   pre_build:
@@ -31,7 +29,7 @@ phases:
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      # requirements.txt에서 mysqlclient 버전 변경
+      # mysqlclient 설치 시도
       - sed -i 's/mysqlclient==2.2.6/mysqlclient==2.1.1/g' requirements.txt
       - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
