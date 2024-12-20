@@ -1,38 +1,37 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_DEFAULT_REGION: "us-east-1"
+
 phases:
   install:
     runtime-versions:
       python: 3.12
     commands:
-      - echo Installing required packages...
-      # Ubuntu mirrors 변경
-      - sed -i 's/archive.ubuntu.com/kr.archive.ubuntu.com/g' /etc/apt/sources.list
-      - sed -i 's/security.ubuntu.com/kr.archive.ubuntu.com/g' /etc/apt/sources.list
-      - apt-get update
-      - apt-get install -y python3-pip python3-dev
+      - echo Installing dependencies...
+      - yum update -y
+      - yum install -y python3-pip python3-devel docker
 
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/multiregion-app
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/multiregion-app
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - echo Installing dependencies...
-      - pip install -r requirements.txt
+      - pip3 install --upgrade pip
+      - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
   build:
     commands:
       - echo Build started on `date`
-      - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
 
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
       - echo Writing image definitions file...
