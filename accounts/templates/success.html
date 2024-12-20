@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .success-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .success-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .info-group {
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .info-label {
+        color: #666;
+        font-weight: 500;
+    }
+
+    .info-value {
+        color: #333;
+        font-weight: 500;
+    }
+
+    .logout-container {
+        text-align: center;
+        margin-top: 2rem;
+    }
+</style>
+
+<div class="success-container">
+    <h2 class="success-title">login success</h2>
+    <div class="info-group">
+        <span class="info-label">이름</span>
+        <span class="info-value">{{ name }}</span>
+    </div>
+    <div class="info-group">
+        <span class="info-label">학번</span>
+        <span class="info-value">{{ student_id }}</span>
+    </div>
+    <div class="info-group">
+        <span class="info-label">학과</span>
+        <span class="info-value">{{ department }}</span>
+    </div>
+    <div class="info-group">
+        <span class="info-label">프로그래밍 언어</span>
+        <span class="info-value">{{ programming_language }}</span>
+    </div>
+    <div class="logout-container">
+        <a href="/logout" class="btn btn-secondary">로그아웃</a>
+    </div>
+</div>
+{% endblock %}

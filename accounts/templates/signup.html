@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .form-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .form-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-size: 0.9rem;
+    }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1rem;
+        background: #fff;
+    }
+
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #333;
+    }
+</style>
+
+<div class="form-container">
+    <h2 class="form-title">회원가입</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">학번</label>
+            <input type="text" name="student_id" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">비밀번호</label>
+            <input type="password" name="password" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">이름</label>
+            <input type="text" name="name" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">이메일</label>
+            <input type="email" name="email" class="form-input" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">학과</label>
+            <select name="department" class="form-select" required>
+                <option value="">학과를 선택하세요</option>
+                {% for dept in departments %}
+                <option value="{{ dept }}">{{ dept }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">프로그래밍 언어</label>
+            <select name="programming_language" class="form-select" required>
+                <option value="">언어를 선택하세요</option>
+                {% for lang in languages %}
+                <option value="{{ lang }}">{{ lang }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">회원가입</button>
+    </form>
+</div>
+{% endblock %}
