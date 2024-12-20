@@ -3,6 +3,7 @@ version: 0.2
 env:
   variables:
     AWS_DEFAULT_REGION: "us-east-1"
+    AWS_ACCOUNT_ID: "296062573301"
     REPOSITORY_NAME: "cloud-app"
 
 phases:
@@ -12,14 +13,17 @@ phases:
     commands:
       - echo Installing dependencies...
       - yum update -y
-      - yum install -y python3-pip python3-devel gcc openssl-devel bzip2-devel libffi-devel docker
+      - yum install -y python3-pip python3-devel docker mysql-devel gcc
       - pip3 install --upgrade pip
 
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
-      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/multiregion-app
+      - aws --version
+      - docker --version
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$REPOSITORY_NAME
+      - aws ecr describe-repositories --repository-names ${REPOSITORY_NAME} || aws ecr create-repository --repository-name ${REPOSITORY_NAME}
+      - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
       - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
