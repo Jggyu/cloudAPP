@@ -1,0 +1,45 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_REGION: "us-east-1"
+    DJANGO_SETTINGS_MODULE: "cloudAPP"  # Django 설정 모듈
+  parameter-store:
+    AWS_ACCOUNT_ID: "/myapp/AWS_ACCOUNT_ID"    # Systems Manager Parameter Store 사용시
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.12.5      # 사용하시는 Python 버전으로 수정
+    commands:
+      - echo Installing required packages...
+      - apt-get update
+      - apt-get install -y python3-pip python3-dev
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/multiregion-app
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:latest
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:latest
+      - echo Writing image definitions file...
+      - printf '{"ImageURI":"%s"}' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
+
+artifacts:
+  files:
+    - imageDefinitions.json

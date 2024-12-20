@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'appdb',
         'USER': 'admin',
         'PASSWORD': 'admin123',
-        'HOST': 'localhost',
+        'HOST': 'cloud-mysql.c7seg6m269tf.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     }
 }
