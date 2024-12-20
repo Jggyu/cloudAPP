@@ -13,24 +13,16 @@ phases:
     commands:
       - echo Installing dependencies...
       - yum update -y
-      - yum install -y gcc python3-devel python3-pip
-      # MySQL를 직접 설치
-      - yum install -y yum-utils
-      - yum install -y mysql mysql-devel
+      - yum install -y python3-devel gcc
       - pip3 install --upgrade pip
 
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws --version
-      - docker --version
       - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$REPOSITORY_NAME
-      - aws ecr describe-repositories --repository-names ${REPOSITORY_NAME} || aws ecr create-repository --repository-name ${REPOSITORY_NAME}
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      # 기존 mysqlclient 버전 변경
-      - sed -i 's/mysqlclient==2.2.6/mysqlclient==2.1.1/g' requirements.txt
       - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
   build:
@@ -48,5 +40,5 @@ phases:
       - printf '{"ImageURI":"%s"}' $REPOSITORY_URI:$IMAGE_TAG > imageDefinitions.json
 
 artifacts:
-  files:
+  files: 
     - imageDefinitions.json
