@@ -17,19 +17,17 @@ phases:
       - yum update -y
       - yum install -y gcc python3-devel python3-pip mysql mysql-devel
       - pip3 install --upgrade pip
-      # mysql 설정 확인
       - ls -la /usr/lib64/mysql
       - ls -la /usr/include/mysql
-      # pkg-config 파일 생성
-      - echo 'prefix=/usr' > /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'exec_prefix=${prefix}' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'libdir=${exec_prefix}/lib64/mysql' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'includedir=${prefix}/include/mysql' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'Name: mysqlclient' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'Description: MySQL client library' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'Version: 8.0' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'Cflags: -I${includedir}' >> /usr/lib64/pkgconfig/mysqlclient.pc
-      - echo 'Libs: -L${libdir} -lmysqlclient' >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "prefix=/usr" > /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "exec_prefix=\${prefix}" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "libdir=\${exec_prefix}/lib64/mysql" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "includedir=\${prefix}/include/mysql" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "Name: mysqlclient" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "Description: MySQL client library" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "Version: 8.0" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "Cflags: -I\${includedir}" >> /usr/lib64/pkgconfig/mysqlclient.pc
+      - echo "Libs: -L\${libdir} -lmysqlclient" >> /usr/lib64/pkgconfig/mysqlclient.pc
 
   pre_build:
     commands:
@@ -41,9 +39,7 @@ phases:
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      # mysqlclient 직접 설치 시도
       - pip3 install --global-option=build_ext --global-option="-I/usr/include/mysql" --global-option="-L/usr/lib64/mysql" mysqlclient==2.1.1
-      # 나머지 requirements 설치
       - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
   build:
