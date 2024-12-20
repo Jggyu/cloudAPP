@@ -13,7 +13,10 @@ phases:
     commands:
       - echo Installing dependencies...
       - yum update -y
-      - yum install -y python3-pip python3-devel docker mysql-devel gcc
+      - yum install -y python3-pip python3-devel docker
+      - yum install -y mysql-devel gcc pkgconfig mariadb-devel
+      - yum groupinstall -y 'Development Tools'
+      - export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig
       - pip3 install --upgrade pip
 
   pre_build:
@@ -26,6 +29,7 @@ phases:
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - export MYSQL_CONFIG=/usr/bin/mysql_config
       - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
   build:
