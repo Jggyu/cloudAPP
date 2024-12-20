@@ -1,18 +1,14 @@
 version: 0.2
 
-env:
-  variables:
-    AWS_REGION: "us-east-1"
-    DJANGO_SETTINGS_MODULE: "cloudAPP"  # Django 설정 모듈
-  parameter-store:
-    AWS_ACCOUNT_ID: "/myapp/AWS_ACCOUNT_ID"    # Systems Manager Parameter Store 사용시
-
 phases:
   install:
     runtime-versions:
-      python: 3.12.5      # 사용하시는 Python 버전으로 수정
+      python: 3.12
     commands:
       - echo Installing required packages...
+      # Ubuntu mirrors 변경
+      - sed -i 's/archive.ubuntu.com/kr.archive.ubuntu.com/g' /etc/apt/sources.list
+      - sed -i 's/security.ubuntu.com/kr.archive.ubuntu.com/g' /etc/apt/sources.list
       - apt-get update
       - apt-get install -y python3-pip python3-dev
 
@@ -23,6 +19,8 @@ phases:
       - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/multiregion-app
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo Installing dependencies...
+      - pip install -r requirements.txt
 
   build:
     commands:
