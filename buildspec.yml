@@ -5,6 +5,8 @@ env:
     AWS_DEFAULT_REGION: "us-east-1"
     AWS_ACCOUNT_ID: "296062573301"
     REPOSITORY_NAME: "cloud-app"
+    MYSQLCLIENT_CFLAGS: "-I/usr/include/mysql"
+    MYSQLCLIENT_LDFLAGS: "-L/usr/lib64/mysql -lmysqlclient"
 
 phases:
   install:
@@ -14,13 +16,21 @@ phases:
       - echo Installing dependencies...
       - yum update -y
       - yum install -y python3-pip python3-devel docker
+      # MySQL 관련 의존성 추가
       - yum install -y mysql-devel gcc pkgconfig mariadb-devel
       - yum groupinstall -y 'Development Tools'
       - export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig
+      # MySQL config 파일이 있는지 확인
+      - ls -la /usr/lib64/mysql
+      - ls -la /usr/include/mysql
       - pip3 install --upgrade pip
 
   pre_build:
     commands:
+      - echo Setting up MySQL configuration...
+      - export MYSQL_CONFIG=/usr/bin/mysql_config
+      - export MYSQLCLIENT_CFLAGS="-I/usr/include/mysql"
+      - export MYSQLCLIENT_LDFLAGS="-L/usr/lib64/mysql -lmysqlclient"
       - echo Logging in to Amazon ECR...
       - aws --version
       - docker --version
@@ -29,7 +39,8 @@ phases:
       - aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - export MYSQL_CONFIG=/usr/bin/mysql_config
+      # requirements.txt 설치 전에 mysqlclient 먼저 설치
+      - pip3 install --global-option=build_ext --global-option="-I/usr/include/mysql" --global-option="-L/usr/lib64/mysql" mysqlclient==2.2.6
       - if [ -f "requirements.txt" ]; then pip3 install -r requirements.txt; fi
 
   build:
