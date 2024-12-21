@@ -25,7 +25,10 @@ SECRET_KEY = 'django-insecure-%h^79!0m2(-j9xw2o-xtb!r-xc_q@ulfilmb-#l-l6)j(j+&(m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'student-portal-alb-123456789.us-east-1.elb.amazonaws.com',
+    'localhost',
+]
 
 
 
