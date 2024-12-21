@@ -35,7 +35,7 @@ phases:
       - docker push ${REPOSITORY_URI}:${IMAGE_TAG}
       - docker push ${REPOSITORY_URI}:latest
       - echo Writing image definitions file...
-      - echo '[{"name":"cloud-app","imageUri":"'${REPOSITORY_URI}:${IMAGE_TAG}'"}]' > imagedefinitions.json
+      - echo '[{"name":"django-app","imageUri":"'${REPOSITORY_URI}:${IMAGE_TAG}'"}]' > imagedefinitions.json
       - cat imagedefinitions.json
 
 artifacts:
